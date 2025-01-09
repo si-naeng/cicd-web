@@ -1,7 +1,7 @@
 pipeline {
     agent any
     environment {
-        BUILD_NUMBER = "2.01"  // 빌드 번호
+        BUILD_NUMBER = "2.02"  // 빌드 번호
         IMAGE_NAME = "192.168.1.183:443/cicd-web/front-cicd"  // Harbor이미지 이름
         HARBOR_CREDENTIALS = credentials('harbor') // jenkins에 등록한 Harbor Credentials ID
     }
