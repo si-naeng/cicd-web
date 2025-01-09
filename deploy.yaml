@@ -1,0 +1,181 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: mysqldb
+  name: mysqldb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysqldb
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: mysqldb
+    spec:
+      containers:
+        - args:
+            - --character-set-server=utf8
+            - --collation-server=utf8_general_ci
+          env:
+            - name: MYSQL_DATABASE
+              value: accountbook
+            - name: MYSQL_PASSWORD
+              value: k8spass#
+            - name: MYSQL_ROOT_HOST
+              value: '%'
+            - name: MYSQL_ROOT_PASSWORD
+              value: k8spass#
+            - name: MYSQL_USER
+              value: kevin
+          image: sinaeng/db-cicd:1.0
+          name: mysqldb
+          ports:
+            - containerPort: 3306
+              hostPort: 3306
+              protocol: TCP
+          resources: {}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: mysqldb
+  name: mysqldb
+spec:
+  ports:
+    - name: "3306"
+      port: 3306
+      targetPort: 3306
+  selector:
+    app: mysqldb
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: backend
+  name: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - env:
+            - name: GOOGLE_APPLICATION_CREDENTIALS
+              value: /gcp-key.json
+            - name: MYSQL_HOST
+              value: mysqldb.default
+            - name: MYSQL_USER
+              value: root
+            - name: MYSQL_PASSWORD
+              value: k8spass#
+          image: sinaeng/back-cicd:2.0
+          name: backend
+          ports:
+            - containerPort: 8080
+              hostPort: 8080
+              protocol: TCP
+          volumeMounts:
+          - name: gcp-key-volume
+            mountPath: /gcp-key.json
+              #subPath: gcp-key.json
+          - name: ocr-image-volume
+            mountPath: /frontend/ocrImage
+
+      volumes:
+      - name: gcp-key-volume
+        hostPath:
+          path: /home/kevin/gcp-key.json
+          type: File
+      - name: ocr-image-volume
+        hostPath:
+          path: /home/kevin/ocrImage
+          type: Directory
+
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: backend
+  name: backend
+spec:
+  ports:
+    - name: "8080"
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: backend
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - image: sinaeng/front-cicd:2.0
+          env:
+            - name: ACCOUNTBOOK_API_ADDR
+              value: backend.default
+          name: frontend
+          ports:
+            - containerPort: 3000
+              hostPort: 3000
+              protocol: TCP
+          volumeMounts:
+          - name: ocr-image-volume
+            mountPath: /frontend/ocrImage
+
+      volumes:
+      - name: ocr-image-volume
+        hostPath:
+          path: /home/kevin/ocrImage
+          type: Directory
+
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: frontend
+  name: frontend
+spec:
+  type: NodePort
+  ports:
+  - port: 3000
+    targetPort: 3000
+  selector:
+    app: frontend
+
