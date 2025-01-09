@@ -60,11 +60,17 @@ pipeline {
                 }
 
                 // SSH로 GitHub에 푸시
-                sshagent(credentials: ['k8s-manifest-credential']) {
-                    sh "git remote set-url origin git@github.com:si-naeng/cicd-web.git"
-                    sh "git push -u origin master"
-                }
-            }
+                #sshagent(credentials: ['k8s-manifest-credential']) {
+                #    sh "git remote set-url origin git@github.com:si-naeng/cicd-web.git"
+                #    sh "git push -u origin master"
+                #}
+                withCredentials([usernamePassword(credentialsId: 'github_access_token', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+                   sh """
+                      git remote set-url origin https://$GITHUB_USER:$GITHUB_TOKEN@github.com/si-naeng/cicd-web.git
+                      git push -u origin master
+                      """
+                   }
+             }
         }
     }
     post {
