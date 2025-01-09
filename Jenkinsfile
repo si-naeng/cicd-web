@@ -51,13 +51,19 @@ pipeline {
                 sh 'git config user.name "Jenkins CI"'
                 // deployment.yaml 파일의 버전 정보를 현재 빌드 번호로 업데이트
                 // Git 변경사항 추가
-                dir('manifests') {
-                    sh """
+               # dir('manifests') {
+               #     sh """
+               #         sed -i 's|image: 192.168.1.183:443/cicd-web/front-cicd:.*|image: 192.168.1.183:443/cicd-web/front-cicd:${BUILD_NUMBER}|g' deploy.yaml
+               #         git add deploy.yaml
+               #         git commit -m '[UPDATE] my-app ${BUILD_NUMBER} image versioning'
+               #     """
+               # }
+
+                sh """
                         sed -i 's|image: 192.168.1.183:443/cicd-web/front-cicd:.*|image: 192.168.1.183:443/cicd-web/front-cicd:${BUILD_NUMBER}|g' deploy.yaml
                         git add deploy.yaml
                         git commit -m '[UPDATE] my-app ${BUILD_NUMBER} image versioning'
                     """
-                }
                 // SSH로 GitHub에 푸시
                 sshagent(credentials: ['k8s-manifest-credential']) {
                     sh "git remote set-url origin git@github.com:si-naeng/cicd-web.git"
