@@ -65,12 +65,13 @@ pipeline {
                 //    sh "git push -u origin master"
                 //}
                 withCredentials([usernamePassword(credentialsId: 'github_access_token', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
-                   sh """
-                      git remote set-url origin https://$GITHUB_USER:$GITHUB_TOKEN@github.com/si-naeng/cicd-web.git
-                      git push -u origin master
-                      """
-                   }
-             }
+                sh """
+                   git config --global credential.helper store
+                   git remote set-url origin https://$GITHUB_USER:$GITHUB_TOKEN@github.com/si-naeng/cicd-web.git
+                   git push -u origin master
+                   """
+                }
+            }
         }
     }
     post {
