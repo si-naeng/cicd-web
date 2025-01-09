@@ -2,86 +2,62 @@ pipeline {
     agent any
     environment {
         BUILD_NUMBER = "2.02"  // 빌드 번호
-        IMAGE_NAME = "192.168.1.183:443/cicd-web/front-cicd"  // Harbor이미지 이름
-        HARBOR_CREDENTIALS = credentials('harbor') // jenkins에 등록한 Harbor Credentials ID
+        IMAGE_NAME = "192.168.1.183:443/cicd-web/front-cicd"  // Harbor 이미지 이름
+        HARBOR_CREDENTIALS = credentials('harbor')  // Harbor Credentials ID
+        GITHUB_CREDENTIALS = credentials('github-access-token')  // GitHub Credentials ID
     }
     stages {
-        stage('Checkout') {
+        stage('Clone repository') {
             steps {
-                git branch: 'master',
-                    credentialsId: 'github_access_token',  // 미리 설정한 GitHub 자격증명 ID
+                git branch: 'master',  // 사용하려는 브랜치
+                    credentialsId: 'github-access-token',  // GitHub 자격증명 ID
                     url: 'https://github.com/si-naeng/cicd-web.git'  // 내 Git URL
             }
         }
-        stage('Login to Harbor') {
-            steps {
-                script {
-                    // Harbor Hub 로그인
-                    sh "docker login -u ${HARBOR_CREDENTIALS_USR} -p ${HARBOR_CREDENTIALS_PSW} 192.168.1.183:443"
-                }
-            }
-        }
+
         stage('Build Docker Image') {
             steps {
-                dir('web-2.0/frontend') {
-                    echo "Start to Build the Image"
-                    // Docker 이미지 빌드
+                script {
                     sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
-                    echo "Build Success"
                 }
             }
         }
-        stage('Push Image to HUB') {
+
+        stage('Push Docker Image to Harbor') {
             steps {
                 script {
-                    echo "Push to Harbor"
-                    // Docker 이미지를 Docker Hub에 푸시
+                    sh "echo ${HARBOR_CREDENTIALS_PSW} | docker login -u ${HARBOR_CREDENTIALS_USR} --password-stdin 192.168.1.183:443"
                     sh "docker push ${IMAGE_NAME}:${BUILD_NUMBER}"
-                    echo "Push Success"
                 }
             }
         }
-        stage('K8S Manifest Update') {
+
+        stage('Update Kubernetes Manifest') {
             steps {
-                // GitHub에서 Kubernetes manifest 레포지토리 체크아웃
-                git credentialsId: 'github_access_token',
-                    url: 'https://github.com/si-naeng/cicd-web.git',
-                    branch: 'master'
-                sh 'git config user.email "jenkins@yourdomain.com"'
-                sh 'git config user.name "Jenkins CI"'
-                // deployment.yaml 파일의 버전 정보를 현재 빌드 번호로 업데이트
-                // Git 변경사항 추가
-                dir('manifests') {
+                script {
+                    sh "git config user.email 'koo2813@naver.com'"  // GitHub 이메일
+                    sh "git config user.name 'si-naeng'"  // GitHub 사용자 이름
+
                     sh """
-                        sed -i 's|image: 192.168.1.183:443/cicd-web/front-cicd:.*|image: 192.168.1.183:443/cicd-web/front-cicd:${BUILD_NUMBER}|g' deploy.yaml
-                        git add deploy.yaml
-                        git commit -m '[UPDATE] my-app ${BUILD_NUMBER} image versioning'
+                        sed -i 's|image: .*|image: ${IMAGE_NAME}:${BUILD_NUMBER}|g' manifests/cicd-deploy.yaml
                     """
-                
-                  // SSH로 GitHub에 푸시
-                  script {
-                      sh "git config user.email 'koo2813@naver.com'"
-                      sh "git config user.name 'si-naeng'"
-                      sh """
-                          sed -i 's|image: .*|image: ${IMAGE_NAME}:${BUILD_NUMBER}|g' manifests/cicd-deploy.yaml
-                      """
-                      sh "git add /home/kevin/cicd-web/manifests/deploy.yaml"
-                      sh "git commit -m '[UPDATE] Updated to image version ${BUILD_NUMBER}'"
-                      // 수정: Personal Access Token을 URL에 포함하여 Push
-                      sh """
-                          git push https://${env.GITHUB_CREDENTIALS_USR}:${env.GITHUB_CREDENTIALS_PSW}@github.com/popoppark/jenkins-exam.git main
-                      """
-                  }
-               }
+                    sh "git add manifests/cicd-deploy.yaml"
+                    sh "git commit -m '[UPDATE] Updated to image version ${BUILD_NUMBER}'"
+
+                    // Personal Access Token을 사용하여 안전하게 Push
+                    sh """
+                        git push https://${env.GITHUB_CREDENTIALS_USR}:${env.GITHUB_CREDENTIALS_PSW}@github.com/si-naeng/cicd-web.git master
+                    """
+                }
             }
         }
     }
     post {
         success {
-            echo 'Pipeline completed successfully!'
+            echo "Pipeline executed successfully!"
         }
         failure {
-            echo 'Pipeline failed. Check the logs.'
+            echo "Pipeline execution failed!"
         }
     }
 }
