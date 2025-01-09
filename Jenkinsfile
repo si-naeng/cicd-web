@@ -65,7 +65,7 @@ pipeline {
                     sh """
                         sed -i 's|image: .*|image: ${IMAGE_NAME}:${BUILD_NUMBER}|g' manifests/cicd-deploy.yaml
                     """
-                    sh "git add manifests/cicd-deploy.yaml"
+                    sh "git add /home/kevin/cicd-web/manifests/deploy.yaml"
                     sh "git commit -m '[UPDATE] Updated to image version ${BUILD_NUMBER}'"
                     // 수정: Personal Access Token을 URL에 포함하여 Push
                     sh """
