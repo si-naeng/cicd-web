@@ -46,7 +46,7 @@ pipeline {
                 // GitHub에서 Kubernetes manifest 레포지토리 체크아웃
                 git credentialsId: 'github_access_token',
                     url: 'https://github.com/si-naeng/cicd-web.git',
-                    branch: 'main'
+                    branch: 'master'
                 sh 'git config user.email "jenkins@yourdomain.com"'
                 sh 'git config user.name "Jenkins CI"'
                 // deployment.yaml 파일의 버전 정보를 현재 빌드 번호로 업데이트
