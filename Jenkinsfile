@@ -64,13 +64,31 @@ pipeline {
                 //    sh "git remote set-url origin git@github.com:si-naeng/cicd-web.git"
                 //    sh "git push -u origin master"
                 //}
-                withCredentials([usernamePassword(credentialsId: 'github_access_token', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
-                sh """
-                   git config --global credential.helper store
-                   git remote set-url origin https://$GITHUB_USER:$GITHUB_TOKEN@github.com/si-naeng/cicd-web.git
-                   git push -u origin master
-                   """
+                //withCredentials([usernamePassword(credentialsId: 'github_access_token', usernameVariable: 'GITHUB_USER', passwordVariable: 'GITHUB_TOKEN')]) {
+                //sh """
+                //   git config --global credential.helper store
+                //   git remote set-url origin https://$GITHUB_USER:$GITHUB_TOKEN@github.com/si-naeng/cicd-web.git
+                //   git push -u origin master
+                //   """
+                //}
+                stage('Update Kubernetes Manifest') {
+                 steps {
+                   script {
+                     sh "git config user.email 'koo2813@naver.com'"
+                     sh "git config user.name 'si-naeng'"
+                     sh """
+                        sed -i 's|image: .*|image: ${IMAGE_NAME}:${BUILD_NUMBER}|g' manifests/cicd-deploy.yaml
+                        """
+                     sh "git add manifests/cicd-deploy.yaml"
+                     sh "git commit -m '[UPDATE] Updated to image version ${BUILD_NUMBER}'"
+                     // 수정: Personal Access Token을 URL에 포함하여 Push
+                     sh """
+                       git push https://${env.GITHUB_CREDENTIALS_USR}:${env.GITHUB_CREDENTIALS_PSW}@github.com/popoppark/jenkins-exam.git main
+                        """
+                   }
                 }
+              }
+        }
             }
         }
     }
