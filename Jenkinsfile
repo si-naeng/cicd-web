@@ -61,7 +61,7 @@ pipeline {
 
                 // SSH로 GitHub에 푸시
                 sshagent(credentials: ['k8s-manifest-credential']) {
-                    sh "git remote set-url origin git@github.com:si-naeng/cicd-web.git"
+                    sh "git remote set-url origin koo2813@naver.com:si-naeng/cicd-web.git"
                     sh "git push -u origin master"
                 }
             }
