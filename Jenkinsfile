@@ -59,22 +59,18 @@ pipeline {
                     """
                 }
                 // SSH로 GitHub에 푸시
-                stage('Update Kubernetes Manifest') {
-                    steps {
-                        script {
-                            sh "git config user.email 'koo2813@naver.com'"
-                            sh "git config user.name 'si-naeng'"
-                            sh """
-                                sed -i 's|image: .*|image: ${IMAGE_NAME}:${BUILD_NUMBER}|g' manifests/cicd-deploy.yaml
-                            """
-                            sh "git add manifests/cicd-deploy.yaml"
-                            sh "git commit -m '[UPDATE] Updated to image version ${BUILD_NUMBER}'"
-                            // 수정: Personal Access Token을 URL에 포함하여 Push
-                            sh """
-                                git push https://${env.GITHUB_CREDENTIALS_USR}:${env.GITHUB_CREDENTIALS_PSW}@github.com/popoppark/jenkins-exam.git main
-                            """
-                        }
-                    }
+                script {
+                    sh "git config user.email 'koo2813@naver.com'"
+                    sh "git config user.name 'si-naeng'"
+                    sh """
+                        sed -i 's|image: .*|image: ${IMAGE_NAME}:${BUILD_NUMBER}|g' manifests/cicd-deploy.yaml
+                    """
+                    sh "git add manifests/cicd-deploy.yaml"
+                    sh "git commit -m '[UPDATE] Updated to image version ${BUILD_NUMBER}'"
+                    // 수정: Personal Access Token을 URL에 포함하여 Push
+                    sh """
+                        git push https://${env.GITHUB_CREDENTIALS_USR}:${env.GITHUB_CREDENTIALS_PSW}@github.com/popoppark/jenkins-exam.git main
+                    """
                 }
             }
         }
