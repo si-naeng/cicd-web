@@ -57,21 +57,22 @@ pipeline {
                         git add deploy.yaml
                         git commit -m '[UPDATE] my-app ${BUILD_NUMBER} image versioning'
                     """
-                }
-                // SSH로 GitHub에 푸시
-                script {
-                    sh "git config user.email 'koo2813@naver.com'"
-                    sh "git config user.name 'si-naeng'"
-                    sh """
-                        sed -i 's|image: .*|image: ${IMAGE_NAME}:${BUILD_NUMBER}|g' manifests/cicd-deploy.yaml
-                    """
-                    sh "git add /home/kevin/cicd-web/manifests/deploy.yaml"
-                    sh "git commit -m '[UPDATE] Updated to image version ${BUILD_NUMBER}'"
-                    // 수정: Personal Access Token을 URL에 포함하여 Push
-                    sh """
-                        git push https://${env.GITHUB_CREDENTIALS_USR}:${env.GITHUB_CREDENTIALS_PSW}@github.com/popoppark/jenkins-exam.git main
-                    """
-                }
+                
+                  // SSH로 GitHub에 푸시
+                  script {
+                      sh "git config user.email 'koo2813@naver.com'"
+                      sh "git config user.name 'si-naeng'"
+                      sh """
+                          sed -i 's|image: .*|image: ${IMAGE_NAME}:${BUILD_NUMBER}|g' manifests/cicd-deploy.yaml
+                      """
+                      sh "git add /home/kevin/cicd-web/manifests/deploy.yaml"
+                      sh "git commit -m '[UPDATE] Updated to image version ${BUILD_NUMBER}'"
+                      // 수정: Personal Access Token을 URL에 포함하여 Push
+                      sh """
+                          git push https://${env.GITHUB_CREDENTIALS_USR}:${env.GITHUB_CREDENTIALS_PSW}@github.com/popoppark/jenkins-exam.git main
+                      """
+                  }
+               }
             }
         }
     }
