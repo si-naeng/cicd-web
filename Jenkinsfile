@@ -10,7 +10,7 @@ pipeline {
         stage('Clone repository') {
             steps {
                 git branch: 'master',  // 사용하려는 브랜치
-                    credentialsId: 'github-access-token',  // GitHub 자격증명 ID
+                    credentialsId: 'github_access_token',  // GitHub 자격증명 ID
                     url: 'https://github.com/si-naeng/cicd-web.git'  // 내 Git URL
             }
         }
