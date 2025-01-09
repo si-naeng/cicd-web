@@ -26,7 +26,7 @@ pipeline {
                 dir('frontend'){
                     echo "Start to Build the Image"
                     // Docker 이미지 빌드
-                    sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
+                    sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ./web-2.0/frontend"
                     echo "Build Success"
                 }
             }
