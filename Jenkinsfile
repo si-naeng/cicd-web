@@ -4,7 +4,7 @@ pipeline {
         BUILD_NUMBER = "2.02"  // 빌드 번호
         IMAGE_NAME = "192.168.1.183:443/cicd-web/front-cicd"  // Harbor 이미지 이름
         HARBOR_CREDENTIALS = credentials('harbor')  // Harbor Credentials ID
-        GITHUB_CREDENTIALS = credentials('github-access-token')  // GitHub Credentials ID
+        GITHUB_CREDENTIALS = credentials('github_access_token')  // GitHub Credentials ID
     }
     stages {
         stage('Clone repository') {
