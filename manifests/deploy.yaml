@@ -30,7 +30,7 @@ spec:
               value: k8spass#
             - name: MYSQL_USER
               value: kevin
-          image: sinaeng/db-cicd:1.0
+          image: 192.168.1.183:443/cicd-web/front-cicd:2.02
           name: mysqldb
           ports:
             - containerPort: 3306
@@ -82,7 +82,7 @@ spec:
               value: root
             - name: MYSQL_PASSWORD
               value: k8spass#
-          image: sinaeng/back-cicd:2.0
+          image: 192.168.1.183:443/cicd-web/front-cicd:2.02
           name: backend
           ports:
             - containerPort: 8080
