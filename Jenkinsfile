@@ -18,7 +18,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh "docker build -t ${IMAGE_NAME}:${BUILD_NUMBER} ."
+                    sh "docker build -f web-2.0/frontend/Dockerfile -t ${IMAGE_NAME}:${BUILD_NUMBER} web-2.0/frontend"
                 }
             }
         }
